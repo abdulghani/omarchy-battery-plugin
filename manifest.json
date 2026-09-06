@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "abdulghani.battery",
+  "name": "Battery charge limit",
+  "version": "1.0.0",
+  "author": "Abdul Ghani",
+  "description": "Charge limit, sailing band, and battery health for laptops with firmware charge thresholds",
+  "kinds": [
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "barWidget": "Panel.qml"
+  },
+  "barWidget": {
+    "displayName": "Battery charge limit",
+    "description": "Charge limit, sailing band, and battery health",
+    "category": "System",
+    "allowMultiple": false,
+    "defaultSection": "right"
+  },
+  "license": "MIT"
+}
