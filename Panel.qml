@@ -498,14 +498,17 @@ Panel {
           onChanged: function (value) { root.setBehaviour(value) }
         }
 
+        // Discharge is the one mode that surprises people, so it keeps the
+        // urgent color; the rest read as ordinary help text.
         Text {
-          visible: root.behaviour === "force-discharge"
+          visible: root.writable && root.behaviourOptions.length > 1
           width: parent.width
           wrapMode: Text.WordWrap
           textFormat: Text.PlainText
-          text: "Discharging on AC. The battery is draining even though the "
-            + "charger is connected."
-          color: root.bar ? root.bar.urgent : Color.urgent
+          text: Model.behaviourDescription(root.behaviour)
+          color: root.behaviour === "force-discharge"
+            ? (root.bar ? root.bar.urgent : Color.urgent)
+            : Qt.darker(root.fg, 1.8)
           font.family: Style.font.family
           font.pixelSize: Style.font.caption
         }

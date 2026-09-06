@@ -80,6 +80,16 @@ function clampStart(start, end) {
 }
 
 // Icons match Omarchy's own power widget so the two read as one system.
+// What the selected charge behaviour actually does, in one line, so the
+// panel explains the mode in place rather than expecting it to be known.
+function behaviourDescription(name) {
+  if (name === "inhibit-charge")
+    return "Charging is paused. The laptop runs from the charger, but the battery is left where it is."
+  if (name === "force-discharge")
+    return "Running the battery down on purpose, even though the charger is connected."
+  return "Charges normally and stops at the band above."
+}
+
 function profileIcon(name) {
   if (name === "power-saver") return "󰌪"
   if (name === "balanced") return "󰊚"

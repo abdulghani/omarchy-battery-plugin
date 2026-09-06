@@ -24,6 +24,9 @@ popup
   ─────────────────────────────────
   BEHAVIOUR
   [ Auto ]  [ Hold ]  [ Discharge ]
+  Charging is paused. The laptop runs
+  from the charger, but the battery is
+  left where it is.
   ─────────────────────────────────
   POWER PROFILE
   [ 󰌪 Saver ] [ 󰊚 Balanced ] [ 󰓅 Perf ]
@@ -52,6 +55,10 @@ battery drifts inside the band instead of trickle-topping at a single point.
 | **Auto** | Normal charging, within the band |
 | **Hold** | `inhibit-charge` — pause charging without draining |
 | **Discharge** | `force-discharge` — run off the battery while plugged in |
+
+The selected mode explains itself in a line beneath the chips, so you do not
+have to remember which is which. Discharge keeps the urgent color, since it is
+the one that surprises people.
 
 **Power profile** — saver / balanced / performance, through
 `omarchy-powerprofiles-set`. Omarchy keeps a **separate profile for AC and for
