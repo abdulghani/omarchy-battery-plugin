@@ -30,6 +30,26 @@ Panel {
   property real health: 0
   property bool sampled: false
 
+  property bool onAc: false
+  property var profiles: []
+  property string activeProfile: ""
+  // Held while a change is in flight, so the chip lights up on the click
+  // rather than waiting for the next poll to confirm it.
+  property string pendingProfile: ""
+  readonly property string shownProfile: pendingProfile !== "" ? pendingProfile : activeProfile
+
+  readonly property var profileOptions: {
+    var out = []
+    for (var i = 0; i < profiles.length; i++) {
+      out.push({
+        value: profiles[i],
+        label: Model.profileLabel(profiles[i]),
+        icon: Model.profileIcon(profiles[i])
+      })
+    }
+    return out
+  }
+
   // While a slider is being dragged the panel shows the handle's position
   // rather than the last reading, so a poll landing mid-drag cannot yank it.
   property int pendingStart: -1
@@ -71,6 +91,13 @@ Panel {
     root.energyFull = s.full
     root.energyDesign = s.design
     root.health = s.health
+    root.onAc = s.onAc
+    // Keep the last known list if a reading came back empty, so the chips do
+    // not vanish when powerprofilesctl is briefly unavailable.
+    if (s.profiles.length > 0) {
+      root.profiles = s.profiles
+      root.activeProfile = s.activeProfile
+    }
     root.sampled = true
   }
 
@@ -106,6 +133,15 @@ Panel {
     settleTimer.restart()
   }
 
+  // Omarchy remembers a profile per power source, so the change has to name
+  // the slot in force rather than just setting the daemon's current profile.
+  function setProfile(value) {
+    if (!value || value === root.activeProfile || profileProc.running) return
+    root.pendingProfile = value
+    profileProc.command = ["omarchy-powerprofiles-set", root.onAc ? "ac" : "battery", value]
+    profileProc.running = true
+  }
+
   function setBehaviour(value) {
     if (value === root.behaviour) return
     root.behaviour = value
@@ -127,6 +163,14 @@ Panel {
   }
 
   Process { id: writeProc }
+
+  Process {
+    id: profileProc
+    onExited: {
+      root.pendingProfile = ""
+      root.sample()
+    }
+  }
 
   // Let the write land in the firmware before trusting a reading again, so a
   // poll racing the write cannot briefly show the old value back.
@@ -454,6 +498,44 @@ Panel {
           color: root.bar ? root.bar.urgent : Color.urgent
           font.family: Style.font.family
           font.pixelSize: Style.font.caption
+        }
+
+        PanelSeparator { foreground: root.fg; visible: root.profileOptions.length > 1 }
+
+        // ---------- Power profile ----------
+        PanelSectionHeader {
+          text: "POWER PROFILE"
+          foreground: root.fg
+          visible: root.profileOptions.length > 1
+        }
+
+        Column {
+          width: parent.width
+          spacing: Style.space(6)
+          visible: root.profileOptions.length > 1
+
+          ButtonGroup {
+            width: parent.width
+            options: root.profileOptions
+            value: root.shownProfile
+            foreground: root.fg
+            background: Color.popups.background
+            accent: Color.accent
+            fontSize: Style.font.bodySmall
+            focusable: false
+            onChanged: function (value) { root.setProfile(value) }
+          }
+
+          Text {
+            width: parent.width
+            wrapMode: Text.WordWrap
+            textFormat: Text.PlainText
+            text: "Remembered for " + (root.onAc ? "AC" : "battery")
+              + " and restored when you next switch to it."
+            color: Qt.darker(root.fg, 1.8)
+            font.family: Style.font.family
+            font.pixelSize: Style.font.caption
+          }
         }
 
         PanelSeparator { foreground: root.fg }

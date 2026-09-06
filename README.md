@@ -25,6 +25,10 @@ popup
   BEHAVIOUR
   [ Auto ]  [ Hold ]  [ Discharge ]
   ─────────────────────────────────
+  POWER PROFILE
+  [ 󰌪 Saver ] [ 󰊚 Balanced ] [ 󰓅 Perf ]
+  Remembered for battery.
+  ─────────────────────────────────
   HEALTH
   Capacity remaining          88.4%
   Full charge      34.8 / 39.4 Wh
@@ -43,6 +47,13 @@ battery drifts inside the band instead of trickle-topping at a single point.
 | **Auto** | Normal charging, within the band |
 | **Hold** | `inhibit-charge` — pause charging without draining |
 | **Discharge** | `force-discharge` — run off the battery while plugged in |
+
+**Power profile** — saver / balanced / performance, through
+`omarchy-powerprofiles-set`. Omarchy keeps a **separate profile for AC and for
+battery**, so the widget sets the slot currently in force and the choice is
+restored whenever you switch back to that power source. The chips are built
+from whatever `omarchy powerprofiles list` reports, so a machine exposing
+different profiles gets its own set. Hidden entirely if fewer than two exist.
 
 **Health** — remaining capacity against design, energy, and cycle count.
 
@@ -110,6 +121,10 @@ echo auto | sudo tee /sys/class/power_supply/BAT0/charge_behaviour
 the QML side parses them and writes changes straight back to sysfs. There is no
 daemon and no polling loop maintaining the limit — the kernel exposes the
 firmware's own thresholds, and the firmware enforces them.
+
+Power profiles go through `omarchy-powerprofiles-set` rather than
+`powerprofilesctl`, so Omarchy's own per-power-source memory keeps working and
+this widget and Omarchy's power widget never disagree.
 
 Polling is only for display: 15s on the bar, 2s while the popup is open. After
 a write the panel holds the slider's position for 900ms before trusting a

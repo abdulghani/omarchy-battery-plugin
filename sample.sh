@@ -14,6 +14,8 @@
 #   health    <percent of design capacity>
 #   cycles    <count>
 #   full      <energy_full in uWh>   design <energy_full_design in uWh>
+#   onac      yes|no                     (external power connected)
+#   profile   <name> <0|1>               (one per available power profile)
 
 set -uo pipefail
 export LC_ALL=C
@@ -61,3 +63,16 @@ echo "design $design"
 if [ "$design" -gt 0 ] 2>/dev/null; then
   echo "health $(awk -v f="$full" -v d="$design" 'BEGIN{printf "%.1f", 100*f/d}')"
 fi
+
+# ---- Power profiles --------------------------------------------------------
+# Which slot a change should be remembered under. Omarchy keeps a separate
+# profile for AC and for battery, so a change has to name the one in force.
+if omarchy power present >/dev/null 2>&1; then
+  echo "onac yes"
+else
+  echo "onac no"
+fi
+
+# "<name>\t<1 if active>" per line.
+omarchy powerprofiles list --active-state 2>/dev/null |
+  awk -F'\t' 'NF >= 2 { print "profile", $1, $2 }'

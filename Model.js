@@ -8,7 +8,8 @@ function parse(text) {
     start: 0, end: 100,
     behaviour: "auto", supports: [],
     capacity: 0, status: "Unknown", power: 0,
-    cycles: 0, full: 0, design: 0, health: 0
+    cycles: 0, full: 0, design: 0, health: 0,
+    onAc: false, profiles: [], activeProfile: ""
   }
 
   var lines = String(text || "").split("\n")
@@ -30,6 +31,11 @@ function parse(text) {
     case "full":      out.full = Number(f[1]) || 0; break
     case "design":    out.design = Number(f[1]) || 0; break
     case "health":    out.health = Number(f[1]) || 0; break
+    case "onac":      out.onAc = f[1] === "yes"; break
+    case "profile":
+      out.profiles.push(f[1])
+      if (f[2] === "1") out.activeProfile = f[1]
+      break
     }
   }
   return out
@@ -71,4 +77,19 @@ function limitActive(end) {
 // firmware is never asked for an impossible band.
 function clampStart(start, end) {
   return Math.max(0, Math.min(start, end - 1))
+}
+
+// Icons match Omarchy's own power widget so the two read as one system.
+function profileIcon(name) {
+  if (name === "power-saver") return "󰌪"
+  if (name === "balanced") return "󰊚"
+  if (name === "performance") return "󰓅"
+  return "󰂄"
+}
+
+function profileLabel(name) {
+  if (name === "power-saver") return "Saver"
+  if (name === "balanced") return "Balanced"
+  if (name === "performance") return "Performance"
+  return name
 }
