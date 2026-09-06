@@ -238,8 +238,9 @@ Panel {
       // charge levels and against the empty body at others.
       readonly property real boltHeight: Math.round(bodyHeight * 0.95)
       readonly property real boltWidth: Math.round(boltHeight * 0.5)
-      readonly property real boltGap: Math.max(2, Math.round(bodyHeight * 0.32))
-      readonly property real boltSlot: root.onAc ? boltWidth + boltGap : 0
+      // Clear space to the right of the bolt, before the battery outline.
+      readonly property real boltMarginRight: Math.max(3, Math.round(bodyHeight * 0.42))
+      readonly property real boltSlot: root.onAc ? boltWidth + boltMarginRight : 0
       // Clear space between the outline and the fill, so the two never merge.
       readonly property real padding: Math.max(1, Math.round(stroke))
 
