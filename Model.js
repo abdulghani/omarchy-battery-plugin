@@ -80,6 +80,16 @@ function clampStart(start, end) {
 }
 
 // Icons match Omarchy's own power widget so the two read as one system.
+// Which way power is moving through the battery, and how fast. The kernel
+// reports power_now as a magnitude, so the direction comes from status.
+function flowLabel(status, power) {
+  var w = watts(power).toFixed(1) + " W"
+  if (status === "Charging") return "Charging   " + w
+  if (status === "Discharging") return "Discharging   " + w
+  if (status === "Full") return "Full"
+  return "Idle   " + w
+}
+
 // What the selected charge behaviour actually does, in one line, so the
 // panel explains the mode in place rather than expecting it to be known.
 function behaviourDescription(name) {

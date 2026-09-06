@@ -28,6 +28,10 @@ popup
   from the charger, but the battery is
   left where it is.
   ─────────────────────────────────
+  CHARGER
+  Adapter                  Connected
+  Battery                  Idle   0.0 W
+  ─────────────────────────────────
   POWER PROFILE
   [ 󰌪 Saver ] [ 󰊚 Balanced ] [ 󰓅 Perf ]
   Remembered for battery.
@@ -59,6 +63,14 @@ battery drifts inside the band instead of trickle-topping at a single point.
 The selected mode explains itself in a line beneath the chips, so you do not
 have to remember which is which. Discharge keeps the urgent color, since it is
 the one that surprises people.
+
+**Charger** — whether the adapter is connected and which way power is moving
+through the battery. Unplugged, it also shows the machine's total draw, since
+everything the laptop uses is coming out of the battery.
+
+> Many laptops, including ThinkPads, expose **no sensor on the AC adapter** —
+> only whether it is plugged in. Where that is the case, draw from the charger
+> cannot be measured and the panel says so rather than inventing a number.
 
 **Power profile** — saver / balanced / performance, through
 `omarchy-powerprofiles-set`. Omarchy keeps a **separate profile for AC and for

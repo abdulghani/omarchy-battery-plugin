@@ -513,6 +513,54 @@ Panel {
           font.pixelSize: Style.font.caption
         }
 
+        PanelSeparator { foreground: root.fg }
+
+        // ---------- Charger ----------
+        PanelSectionHeader {
+          text: "CHARGER"
+          foreground: root.fg
+        }
+
+        Column {
+          width: parent.width
+          spacing: Style.space(5)
+
+          StatLine {
+            width: parent.width
+            label: "Adapter"
+            value: root.onAc ? "Connected" : "Disconnected"
+          }
+
+          StatLine {
+            width: parent.width
+            label: "Battery"
+            value: Model.flowLabel(root.status, root.powerNow)
+          }
+
+          // Unplugged, everything the machine uses comes out of the battery,
+          // so the battery's own output is the whole machine's draw. On the
+          // adapter there is nothing to measure it with: this laptop exposes
+          // no sensor on AC at all, only whether it is connected.
+          StatLine {
+            width: parent.width
+            visible: !root.onAc
+            label: "Machine draw"
+            value: Model.watts(root.powerNow).toFixed(1) + " W"
+          }
+
+          Text {
+            width: parent.width
+            wrapMode: Text.WordWrap
+            textFormat: Text.PlainText
+            text: root.onAc
+              ? "This laptop reports no sensor on the adapter, only whether it is connected, so draw from the charger cannot be measured. Unplug and the battery's output is the machine's draw."
+              : "Measured from the battery's output, which is everything the machine is using."
+            color: Qt.darker(root.fg, 1.8)
+            font.family: Style.font.family
+            font.pixelSize: Style.font.caption
+          }
+        }
+
         PanelSeparator { foreground: root.fg; visible: root.profileOptions.length > 1 }
 
         // ---------- Power profile ----------
