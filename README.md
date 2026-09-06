@@ -11,6 +11,7 @@ being disabled.
 
 ```
 bar:     ▰▰▰▰▰▰▱▱▮      <- drawn battery, filled to the real charge
+        ⚡▰▰▰▰▰▰▱▱▮      <- bolt appears while the charger is connected
 
 popup
   󰂀  96%   Discharging
@@ -45,7 +46,11 @@ popup
 The bar carries only the battery: a drawn outline whose fill tracks the charge
 continuously. It is drawn rather than set from a font glyph because Nerd Font
 battery icons step in tenths, so a glyph can only show the charge rounded to
-the nearest 10%. It turns your theme's urgent color below 15%.
+the nearest 10%. It turns your theme's urgent color below 15%, and a bolt appears to its left
+while the adapter is connected. The bolt is drawn too, not set from a font
+glyph, so it cannot land as a missing-glyph box on a bar font without the icon
+— and it sits outside the outline, where it stays legible at every charge
+level instead of fighting the fill behind it.
 
 **Sailing band** — the pair of thresholds. The firmware stops charging at the
 upper bound and does not resume until you fall below the lower one, so the

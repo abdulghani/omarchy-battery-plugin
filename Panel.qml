@@ -233,17 +233,57 @@ Panel {
       readonly property real capWidth: Math.max(1, Math.round(bodyHeight * 0.14))
       readonly property real capHeight: Math.max(2, Math.round(bodyHeight * 0.42))
       readonly property real capGap: Math.max(1, Math.round(bodyHeight * 0.09))
+      // Bolt shown while the adapter is connected. It sits outside the
+      // outline: drawn inside, it would be illegible against the fill at some
+      // charge levels and against the empty body at others.
+      readonly property real boltHeight: Math.round(bodyHeight * 0.95)
+      readonly property real boltWidth: Math.round(boltHeight * 0.5)
+      readonly property real boltGap: Math.max(1, Math.round(bodyHeight * 0.16))
+      readonly property real boltSlot: root.onAc ? boltWidth + boltGap : 0
       // Clear space between the outline and the fill, so the two never merge.
       readonly property real padding: Math.max(1, Math.round(stroke))
 
-      implicitWidth: bodyWidth + capGap + capWidth
+      implicitWidth: boltSlot + bodyWidth + capGap + capWidth
       implicitHeight: bodyHeight
+
+      // Drawn rather than set from a font glyph, so it cannot land as a
+      // missing-glyph box on a bar font without the icon.
+      Canvas {
+        id: bolt
+        visible: root.onAc
+        width: glyph.boltWidth
+        height: glyph.boltHeight
+        anchors.left: parent.left
+        anchors.verticalCenter: parent.verticalCenter
+
+        // Canvas does not repaint on a bound colour changing, so track it.
+        property color ink: button.inkColor
+        onInkChanged: requestPaint()
+        onVisibleChanged: if (visible) requestPaint()
+
+        onPaint: {
+          var ctx = getContext("2d")
+          ctx.reset()
+          var w = width, h = height
+          ctx.beginPath()
+          ctx.moveTo(0.62 * w, 0)
+          ctx.lineTo(0.16 * w, 0.57 * h)
+          ctx.lineTo(0.45 * w, 0.57 * h)
+          ctx.lineTo(0.38 * w, h)
+          ctx.lineTo(0.84 * w, 0.43 * h)
+          ctx.lineTo(0.55 * w, 0.43 * h)
+          ctx.closePath()
+          ctx.fillStyle = ink
+          ctx.fill()
+        }
+      }
 
       Rectangle {
         id: shell
         width: glyph.bodyWidth
         height: glyph.bodyHeight
         anchors.left: parent.left
+        anchors.leftMargin: glyph.boltSlot
         anchors.verticalCenter: parent.verticalCenter
         color: "transparent"
         radius: Math.max(1, Math.round(glyph.bodyHeight * 0.22))
