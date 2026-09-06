@@ -194,14 +194,11 @@ Panel {
 
   // ---- Bar button ----------------------------------------------------------
 
-  readonly property real barIconSize: Style.bar.iconFont
-  readonly property real barValueSize: Style.font.bodySmall
-
-  // The cap is what this widget is for, so that is what the bar carries;
-  // Omarchy's own power widget already shows the charge level.
-  readonly property string barIcon: behaviour === "force-discharge" ? "󰶈"
-    : behaviour === "inhibit-charge" ? "󰂃"
-    : limited ? "󰂄" : Model.levelIcon(capacity, charging)
+  // The battery is drawn rather than set from a font glyph. Nerd Font battery
+  // icons step in tenths, so a glyph can only ever show the charge rounded to
+  // the nearest 10%; a drawn bar fills continuously with the real figure.
+  readonly property real batteryFraction: Math.max(0, Math.min(1, capacity / 100))
+  readonly property bool batteryLow: capacity <= 15 && !charging
 
   WidgetButton {
     id: button
@@ -209,8 +206,9 @@ Panel {
     bar: root.bar
     horizontalMargin: 6
     labelVisible: false
-    active: !root.writable && root.present
-    text: root.barIcon + " " + root.endThreshold
+    active: root.batteryLow || (!root.writable && root.present)
+    // Non-empty so WidgetButton keeps the slot visible; nothing paints it.
+    text: " "
     tooltipText: root.present
       ? (root.capacity + "%  " + root.status
          + "   ·   limit " + root.startThreshold + "–" + root.endThreshold + "%"
@@ -218,61 +216,73 @@ Panel {
          + (root.writable ? "" : "   ·   read-only"))
       : ""
 
-    readonly property bool stacked: root.bar ? root.bar.vertical : false
-    fixedWidth: stacked ? -1 : horizontalRow.implicitWidth + scaledHorizontalMargin * 2
-    fixedHeight: stacked ? verticalColumn.implicitHeight + scaledVerticalPadding * 2 : -1
+    fixedWidth: glyph.implicitWidth + scaledHorizontalMargin * 2
+    fixedHeight: -1
 
-    Row {
-      id: horizontalRow
-      visible: !button.stacked
+    readonly property color inkColor: button.active ? button.activeColor : button.foreground
+
+    Item {
+      id: glyph
       anchors.centerIn: parent
-      spacing: Style.spaceReal(3)
 
-      Text {
-        textFormat: Text.PlainText
-        text: root.barIcon
-        color: button.active ? button.activeColor : button.foreground
-        font.family: button.fontFamily
-        font.pixelSize: root.barIconSize
-        renderType: Text.NativeRendering
+      // Sized off the bar so it keeps its proportions on a rescaled bar, and
+      // laid out on whole pixels so the 1px outline stays crisp.
+      readonly property real bodyHeight: Math.max(9, Math.round(button.barSize * 0.46))
+      readonly property real bodyWidth: Math.round(bodyHeight * 1.95)
+      readonly property real stroke: Math.max(1, Math.round(bodyHeight * 0.1))
+      readonly property real capWidth: Math.max(1, Math.round(bodyHeight * 0.14))
+      readonly property real capHeight: Math.max(2, Math.round(bodyHeight * 0.42))
+      readonly property real capGap: Math.max(1, Math.round(bodyHeight * 0.09))
+      // Clear space between the outline and the fill, so the two never merge.
+      readonly property real padding: Math.max(1, Math.round(stroke))
+
+      implicitWidth: bodyWidth + capGap + capWidth
+      implicitHeight: bodyHeight
+
+      Rectangle {
+        id: shell
+        width: glyph.bodyWidth
+        height: glyph.bodyHeight
+        anchors.left: parent.left
         anchors.verticalCenter: parent.verticalCenter
+        color: "transparent"
+        radius: Math.max(1, Math.round(glyph.bodyHeight * 0.22))
+        border.width: glyph.stroke
+        border.color: button.inkColor
+        // The outline is the frame, so it reads lighter than the charge itself.
+        opacity: 0.75
+
+        Behavior on border.color { ColorAnimation { duration: 200 } }
       }
 
-      Text {
-        textFormat: Text.PlainText
-        text: root.limited ? root.endThreshold + "%" : root.capacity + "%"
-        color: button.active ? button.activeColor : button.foreground
-        font.family: button.fontFamily
-        font.pixelSize: root.barValueSize
-        renderType: Text.NativeRendering
-        anchors.verticalCenter: parent.verticalCenter
-      }
-    }
+      // Charge level. Width is the only thing that moves; it animates so a
+      // poll landing between readings slides rather than jumps.
+      Rectangle {
+        id: level
+        readonly property real track: shell.width - (glyph.stroke + glyph.padding) * 2
+        x: shell.x + glyph.stroke + glyph.padding
+        width: Math.max(root.batteryFraction > 0 ? 1 : 0, track * root.batteryFraction)
+        height: shell.height - (glyph.stroke + glyph.padding) * 2
+        anchors.verticalCenter: shell.verticalCenter
+        radius: Math.max(1, Math.round(height * 0.28))
+        color: button.inkColor
 
-    Column {
-      id: verticalColumn
-      visible: button.stacked
-      anchors.centerIn: parent
-      spacing: 0
-
-      Text {
-        textFormat: Text.PlainText
-        text: root.barIcon
-        color: button.active ? button.activeColor : button.foreground
-        font.family: button.fontFamily
-        font.pixelSize: root.barIconSize
-        renderType: Text.NativeRendering
-        anchors.horizontalCenter: parent.horizontalCenter
+        Behavior on width { NumberAnimation { duration: 320; easing.type: Easing.OutCubic } }
+        Behavior on color { ColorAnimation { duration: 200 } }
       }
 
-      Text {
-        textFormat: Text.PlainText
-        text: String(root.limited ? root.endThreshold : root.capacity)
-        color: button.active ? button.activeColor : button.foreground
-        font.family: button.fontFamily
-        font.pixelSize: root.barValueSize
-        renderType: Text.NativeRendering
-        anchors.horizontalCenter: parent.horizontalCenter
+      // Terminal nub on the right, the part that makes it read as a battery.
+      Rectangle {
+        width: glyph.capWidth
+        height: glyph.capHeight
+        anchors.left: shell.right
+        anchors.leftMargin: glyph.capGap
+        anchors.verticalCenter: shell.verticalCenter
+        radius: Math.max(1, Math.round(glyph.capWidth * 0.4))
+        color: button.inkColor
+        opacity: 0.75
+
+        Behavior on color { ColorAnimation { duration: 200 } }
       }
     }
 

@@ -10,7 +10,7 @@ background, and the limit survives reboots, logouts, and the widget itself
 being disabled.
 
 ```
-bar:     󰂄 80%
+bar:     ▰▰▰▰▰▰▱▱▮      <- drawn battery, filled to the real charge
 
 popup
   󰂀  96%   Discharging
@@ -34,6 +34,11 @@ popup
   Full charge      34.8 / 39.4 Wh
   Cycles                         52
 ```
+
+The bar carries only the battery: a drawn outline whose fill tracks the charge
+continuously. It is drawn rather than set from a font glyph because Nerd Font
+battery icons step in tenths, so a glyph can only show the charge rounded to
+the nearest 10%. It turns your theme's urgent color below 15%.
 
 **Sailing band** — the pair of thresholds. The firmware stops charging at the
 upper bound and does not resume until you fall below the lower one, so the
