@@ -216,14 +216,24 @@ Panel {
          + (root.writable ? "" : "   ·   read-only"))
       : ""
 
-    fixedWidth: glyph.implicitWidth + scaledHorizontalMargin * 2
+    fixedWidth: glyph.implicitWidth
+      + (percentLabel.visible ? percentGap + percentLabel.implicitWidth : 0)
+      + scaledHorizontalMargin * 2
     fixedHeight: -1
 
     readonly property color inkColor: button.active ? button.activeColor : button.foreground
+    // A vertical bar is 28px wide, with no room for the battery and a label
+    // side by side, so there the drawn battery speaks alone.
+    readonly property bool showPercent: !(root.bar && root.bar.vertical)
+    readonly property real percentGap: Style.spaceReal(4)
 
     Item {
       id: glyph
-      anchors.centerIn: parent
+      anchors.verticalCenter: parent.verticalCenter
+      anchors.horizontalCenter: parent.horizontalCenter
+      anchors.horizontalCenterOffset: percentLabel.visible
+        ? -(button.percentGap + percentLabel.implicitWidth) / 2
+        : 0
 
       // Sized off the bar so it keeps its proportions on a rescaled bar, and
       // laid out on whole pixels so the 1px outline stays crisp.
@@ -325,6 +335,20 @@ Panel {
 
         Behavior on color { ColorAnimation { duration: 200 } }
       }
+    }
+
+    Text {
+      id: percentLabel
+      visible: button.showPercent
+      textFormat: Text.PlainText
+      text: root.capacity + "%"
+      color: button.inkColor
+      font.family: button.fontFamily
+      font.pixelSize: Style.font.bodySmall
+      renderType: Text.NativeRendering
+      anchors.left: glyph.right
+      anchors.leftMargin: button.percentGap
+      anchors.verticalCenter: parent.verticalCenter
     }
 
     onPressed: function (b) { root.toggle() }

@@ -10,8 +10,8 @@ background, and the limit survives reboots, logouts, and the widget itself
 being disabled.
 
 ```
-bar:     ▰▰▰▰▰▰▱▱▮      <- drawn battery, filled to the real charge
-        ⚡▰▰▰▰▰▰▱▱▮      <- bolt appears while the charger is connected
+bar:     ▰▰▰▰▰▰▱▱▮ 89%   <- drawn battery, filled to the real charge
+        ⚡▰▰▰▰▰▰▱▱▮ 89%   <- bolt appears while the charger is connected
 
 popup
   󰂀  96%   Discharging
@@ -43,8 +43,8 @@ popup
   Cycles                         52
 ```
 
-The bar carries only the battery: a drawn outline whose fill tracks the charge
-continuously. It is drawn rather than set from a font glyph because Nerd Font
+The bar carries the battery and its charge: a drawn outline whose fill tracks
+the level continuously, with the percentage beside it. It is drawn rather than set from a font glyph because Nerd Font
 battery icons step in tenths, so a glyph can only show the charge rounded to
 the nearest 10%. It turns your theme's urgent color below 15%, and a bolt appears to its left
 while the adapter is connected. The bolt is drawn too, not set from a font
