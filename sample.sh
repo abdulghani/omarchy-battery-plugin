@@ -16,7 +16,6 @@
 #   full      <energy_full in uWh>   design <energy_full_design in uWh>
 #   onac      yes|no                     (external power connected)
 #   profile   <name> <0|1>               (one per available power profile)
-#   cpu, cpuwritable, cpucap, throttle, throttlesaved   (see throttle.sh)
 
 set -uo pipefail
 export LC_ALL=C
@@ -77,7 +76,3 @@ fi
 # "<name>\t<1 if active>" per line.
 omarchy powerprofiles list --active-state 2>/dev/null |
   awk -F'\t' 'NF >= 2 { print "profile", $1, $2 }'
-
-# ---- CPU throttle ----------------------------------------------------------
-# throttle.sh owns what the cap is, so the reading comes from there too.
-"$(dirname "$0")/throttle.sh" status
