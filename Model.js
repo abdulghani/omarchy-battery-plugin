@@ -9,7 +9,8 @@ function parse(text) {
     behaviour: "auto", supports: [],
     capacity: 0, status: "Unknown", power: 0,
     cycles: 0, full: 0, design: 0, health: 0,
-    onAc: false, profiles: [], activeProfile: ""
+    onAc: false, profiles: [], activeProfile: "",
+    cpu: false, cpuWritable: false, cpuCap: 0, throttle: false
   }
 
   var lines = String(text || "").split("\n")
@@ -32,6 +33,10 @@ function parse(text) {
     case "design":    out.design = Number(f[1]) || 0; break
     case "health":    out.health = Number(f[1]) || 0; break
     case "onac":      out.onAc = f[1] === "yes"; break
+    case "cpu":         out.cpu = f[1] === "yes"; break
+    case "cpuwritable": out.cpuWritable = f[1] === "yes"; break
+    case "cpucap":      out.cpuCap = Number(f[1]) || 0; break
+    case "throttle":    out.throttle = f[1] === "on"; break
     case "profile":
       out.profiles.push(f[1])
       if (f[2] === "1") out.activeProfile = f[1]
@@ -112,4 +117,16 @@ function profileLabel(name) {
   if (name === "balanced") return "Balanced"
   if (name === "performance") return "Performance"
   return name
+}
+
+// Gigahertz, from the kernel's kilohertz, to one decimal.
+function ghz(khz) {
+  return ((Number(khz) || 0) / 1000000).toFixed(1) + " GHz"
+}
+
+// What the CPU switch does, in one line, so the panel explains it in place.
+function throttleDescription(on, capKhz) {
+  if (on)
+    return "Every core is capped at " + ghz(capKhz) + ". Saves power under sustained load; heavy work takes longer."
+  return "Caps every core at " + ghz(capKhz) + " to save power under sustained load. Remembered across reboots."
 }
